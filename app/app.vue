@@ -137,12 +137,7 @@ function handleCheckout() {
 <template>
   <div>
     <!-- Navbar -->
-    <header class="navbar">
-      <div class="brand-logo">KAZKA & CO.</div>
-      <button class="cart-btn" @click="isCartOpen = true">
-        Keranjang (<span>{{ cartCount }}</span>)
-      </button>
-    </header>
+    <Navbar :cart-count="cartCount" @open-cart="isCartOpen = true" />
 
     <!-- Hero Section -->
     <section class="hero">
