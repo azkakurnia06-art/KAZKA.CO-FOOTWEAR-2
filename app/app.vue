@@ -155,24 +155,12 @@ function handleCheckout() {
       </div>
 
       <div class="products-grid">
-        <div v-for="product in products" :key="product.id" class="product-card">
-          <img :src="product.image" :alt="product.name" class="product-img">
-          <div class="product-info">
-            <h4 class="product-title">{{ product.name }}</h4>
-            <p class="product-price">{{ formatRupiah(product.price) }}</p>
-
-            <label class="size-select-label">Pilih Ukuran:</label>
-            <select v-model="product.selectedSize" class="size-dropdown">
-              <option v-for="size in product.sizes" :key="size" :value="size">
-                EU {{ size }}
-              </option>
-            </select>
-
-            <button class="add-cart-btn" @click="addToCart(product)">
-              + Tambah ke Keranjang
-            </button>
-          </div>
-        </div>
+        <ProductCard
+          v-for="product in products"
+          :key="product.id"
+          :product="product"
+          @add-to-cart="addToCart"
+        />
       </div>
     </main>
 
