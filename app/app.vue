@@ -1,173 +1,393 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import Navbar from '~/components/Navbar.vue'
+import ProductCard from '~/components/ProductCard.vue'
+import SizeChartModal from '~/components/SizeChartModal.vue'
+import CartDrawer from '~/components/CartDrawer.vue'
+import InvoiceModal from '~/components/InvoiceModal.vue' // <-- TARUH DI SINI
 
-// Data Produk Sepatu
+// 1. Data Katalog Produk (Lengkap dengan properti category)
 const products = ref([
   {
     id: 1,
-    name: "KAZKA & CO. Vulc Canvas Low - Off White",
+    name: 'KAZKA & CO. Vulc Canvas Low - Off White',
     price: 289000,
-    image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=600&auto=format&fit=crop&q=60",
-    sizes: [38, 39, 40, 41, 42, 43],
-    selectedSize: 38
+    category: 'low',
+    badge: 'Best Seller',
+    image: '/images/gambar-sepatu-1.jpeg',
+    stock: { 38: 5, 39: 0, 40: 8, 41: 3, 42: 0, 43: 4 }
   },
   {
     id: 2,
-    name: "KAZKA & CO. Vulc Canvas High - Jet Black",
+    name: 'KAZKA & CO. Vulc Canvas High - Jet Black',
     price: 319000,
-    image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&auto=format&fit=crop&q=60",
-    sizes: [38, 39, 40, 41, 42, 45],
-    selectedSize: 38
+    category: 'high',
+    badge: 'New Arrival',
+    image: '/images/gambar-sepatu-2.jpeg',
+    stock: { 38: 2, 39: 4, 40: 0, 41: 5, 42: 2, 43: 1 }
   },
   {
     id: 3,
-    name: "KAZKA & CO. Retro Court - Olive Grey",
+    name: 'KAZKA & CO. Retro Court - Olive Grey',
     price: 349000,
-    image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&auto=format&fit=crop&q=60",
-    sizes: [40, 41, 42, 43, 44, 45],
-    selectedSize: 40
+    category: 'court',
+    badge: 'Diskon 10%',
+    image: '/images/gambar-sepatu-3.jpeg',
+    stock: { 38: 0, 39: 3, 40: 5, 41: 0, 42: 6, 43: 2 }
   },
   {
     id: 4,
-    name: "KAZKA & CO Vulc Canvas - White and Orange Gum",
-    price: 400000,
-    image: "/images/gambar-sepatu-1.jpeg",
-    sizes: [40, 41, 42, 43, 44, 45],
-    selectedSize: 40
+    name: 'KAZKA & CO. Retro Court - Cream Gum',
+    price: 349000,
+    category: 'court',
+    badge: null,
+    image: '/images/gambar-sepatu-4.jpeg',
+    stock: { 38: 4, 39: 2, 40: 3, 41: 2, 42: 5, 43: 0 }
   },
   {
     id: 5,
-    name: "KAZKA & CO Vulc Canvas - Chocolate and White",
-    price: 450000,
-    image: "/images/gambar-sepatu-2.jpeg",
-    sizes: [40, 41, 42, 43, 44, 45],
-    selectedSize: 40
+    name: 'KAZKA & CO. Slip-On Classic - Checkerboard',
+    price: 269000,
+    category: 'slip on',
+    badge: 'Hot Item',
+    image: '/images/gambar-sepatu-5.jpeg',
+    stock: { 38: 3, 39: 0, 40: 2, 41: 4, 42: 0, 43: 3 }
   },
   {
     id: 6,
-    name: "KAZKA & CO Vulc - White and Green Gum",
-    price: 385000,
-    image: "/images/gambar-sepatu-3.jpeg",
-    sizes: [40, 41, 42, 43, 44, 45],
-    selectedSize: 40
+    name: 'KAZKA & CO. Slip-On Lite - Triple Black',
+    price: 259000,
+    category: 'slip on',
+    badge: null,
+    image: '/images/gambar-sepatu-6.jpeg',
+    stock: { 38: 5, 39: 4, 40: 6, 41: 3, 42: 2, 43: 1 }
   },
   {
     id: 7,
-    name: "KAZKA & CO Vulc Low - White and Cream",
-    price: 380000,
-    image: "/images/gambar-sepatu-4.jpeg",
-    sizes: [40, 41, 42, 43, 44, 45],
-    selectedSize: 40
+    name: 'KAZKA & CO. Vulc Canvas Low - Off White',
+    price: 289000,
+    category: 'low',
+    badge: 'Best Seller',
+    image: '/images/gambar-sepatu-7.jpeg',
+    stock: { 38: 5, 39: 0, 40: 8, 41: 3, 42: 0, 43: 4 }
   },
   {
     id: 8,
-    name: "KAZKA & CO Vulc Low - Milk",
-    price: 390000,
-    image: "/images/gambar-sepatu-5.jpeg",
-    sizes: [40, 41, 42, 43, 44, 45],
-    selectedSize: 40
+    name: 'KAZKA & CO. Vulc Canvas High - Jet Black',
+    price: 319000,
+    category: 'high',
+    badge: 'New Arrival',
+    image: '/images/gambar-sepatu-8.jpeg',
+    stock: { 38: 2, 39: 4, 40: 0, 41: 5, 42: 2, 43: 1 }
   },
   {
     id: 9,
-    name: "KAZKA & CO Vulc Low - Chocolate Gum",
-    price: 395000,
-    image: "/images/gambar-sepatu-6.jpeg",
-    sizes: [40, 41, 42, 43, 44, 45],
-    selectedSize: 40
+    name: 'KAZKA & CO. Retro Court - Olive Grey',
+    price: 349000,
+    category: 'court',
+    badge: 'Diskon 10%',
+    image: '/images/gambar-sepatu-9.jpeg',
+    stock: { 38: 0, 39: 3, 40: 5, 41: 0, 42: 6, 43: 2 }
+  },
+  {
+    id: 10,
+    name: 'KAZKA & CO. Retro Court - Cream Gum',
+    price: 349000,
+    category: 'court',
+    badge: null,
+    image: '/images/gambar-sepatu-10.jpeg',
+    stock: { 38: 4, 39: 2, 40: 3, 41: 2, 42: 5, 43: 0 }
+  },
+  {
+    id: 11,
+    name: 'KAZKA & CO. Slip-On Classic - Checkerboard',
+    price: 269000,
+    category: 'slip on',
+    badge: 'Hot Item',
+    image: '/images/gambar-sepatu-11.jpeg',
+    stock: { 38: 3, 39: 0, 40: 2, 41: 4, 42: 0, 43: 3 }
+  },
+  {
+    id: 12,
+    name: 'KAZKA & CO. Slip-On Lite - Triple Black',
+    price: 259000,
+    category: 'slip on',
+    badge: null,
+    image: '/images/gambar-sepatu-12.jpeg',
+    stock: { 38: 5, 39: 4, 40: 6, 41: 3, 42: 2, 43: 1 }
   }
 ])
 
-// State Keranjang & Pop-up
-const cart = ref([])
+// 2. Search & Category Filter State
+const searchQuery = ref('')
+const selectedCategory = ref('all')
+
+const sortBy = ref('default') // default, price-asc, price-desc, name-asc
+
+const filteredProducts = computed(() => {
+  if (!products.value || !Array.isArray(products.value)) return []
+
+  // 1. Filter Kategori & Pencarian dengan perlindungan aman
+  let list = products.value.filter((item) => {
+    if (!item) return false
+    
+    const matchCategory = 
+      selectedCategory.value === 'all' || 
+      (item.category && item.category.toLowerCase() === selectedCategory.value.toLowerCase())
+
+    const query = searchQuery.value ? searchQuery.value.toLowerCase().trim() : ''
+    const matchSearch = item.name ? item.name.toLowerCase().includes(query) : true
+
+    return matchCategory && matchSearch
+  })
+
+  // 2. Pengurutan / Sorting
+  if (sortBy.value === 'price-asc') {
+    list.sort((a, b) => (a.price || 0) - (b.price || 0))
+  } else if (sortBy.value === 'price-desc') {
+    list.sort((a, b) => (b.price || 0) - (a.price || 0))
+  } else if (sortBy.value === 'name-asc') {
+    list.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  }
+
+  return list
+})
+
+// 3. UI State
 const isCartOpen = ref(false)
 const isSizeChartOpen = ref(false)
+const isInvoiceOpen = ref(false) // <-- BARU
+const currentInvoice = ref(null) // <-- BARU
 
-// Form Pembeli
-const customerName = ref('')
-const customerEmail = ref('')
-const customerPhone = ref('')
 
-// Perhitungan Otomatis
-const cartCount = computed(() => cart.value.reduce((sum, item) => sum + item.qty, 0))
-const cartTotal = computed(() => cart.value.reduce((sum, item) => sum + (item.price * item.qty), 0))
 
-function formatRupiah(num) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num)
+// 4. Cart State & LocalStorage Persistence
+const cart = ref([])
+
+onMounted(() => {
+  const savedCart = localStorage.getItem('kazka_cart')
+  if (savedCart) {
+    try {
+      cart.value = JSON.parse(savedCart)
+    } catch (e) {
+      cart.value = []
+    }
+  }
+})
+
+watch(cart, (newCart) => {
+  localStorage.setItem('kazka_cart', JSON.stringify(newCart))
+}, { deep: true })
+
+const cartCount = computed(() => {
+  return cart.value.reduce((total, item) => total + item.qty, 0)
+})
+
+// Hitung total belanja secara aman
+const cartTotal = computed(() => {
+  if (!cart.value || !Array.isArray(cart.value)) return 0
+  return cart.value.reduce((total, item) => {
+    if (!item || !item.price || !item.qty) return total
+    return total + (item.price * item.qty)
+  }, 0)
+})
+
+// 5. Toast Notification
+const toastMessage = ref('')
+const showToast = ref(false)
+let toastTimeout = null
+
+const triggerToast = (msg) => {
+  toastMessage.value = msg
+  showToast.value = true
+  if (toastTimeout) clearTimeout(toastTimeout)
+  toastTimeout = setTimeout(() => {
+    showToast.value = false
+  }, 2500)
 }
 
-function addToCart(product) {
-  const existingItem = cart.value.find(item => item.id === product.id && item.size === product.selectedSize)
+// 6. Cart Actions
+// Tambah ke keranjang secara aman
+const addToCart = (productData) => {
+  if (!productData || !productData.id) return
+
+  if (!cart.value) cart.value = []
+
+  const existingItem = cart.value.find(
+    (item) => item && item.id === productData.id && item.size === productData.size
+  )
+
   if (existingItem) {
-    existingItem.qty += 1
+    existingItem.qty = (existingItem.qty || 1) + 1
   } else {
     cart.value.push({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      size: product.selectedSize,
+      ...productData,
       qty: 1
     })
   }
-  isCartOpen.value = true
+
+  showToast.value = true
+  toastMessage.value = `${productData.name} (Size ${productData.size}) berhasil ditambahkan!`
+  setTimeout(() => {
+    showToast.value = false
+  }, 2500)
 }
 
-function changeQty(productId, size, delta) {
-  const idx = cart.value.findIndex(item => item.id === productId && item.size === size)
-  if (idx > -1) {
-    cart.value[idx].qty += delta
-    if (cart.value[idx].qty <= 0) {
-      cart.value.splice(idx, 1)
+const changeQty = ({ id, size, delta }) => {
+  const itemIndex = cart.value.findIndex(
+    (item) => item.id === id && item.size === size
+  )
+  if (itemIndex > -1) {
+    cart.value[itemIndex].qty += delta
+    if (cart.value[itemIndex].qty <= 0) {
+      cart.value.splice(itemIndex, 1)
     }
   }
 }
 
-function handleCheckout() {
-  if (cart.value.length === 0) {
-    alert("Keranjang masih kosong!")
-    return
+const handleCheckout = (orderData) => {
+  const now = new Date()
+  const invoiceId = 'KZK-' + Math.floor(100000 + Math.random() * 900000)
+  const dateFormatted = now.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
+
+  currentInvoice.value = {
+    ...orderData,
+    invoiceId,
+    date: dateFormatted,
+    items: [...cart.value],
+    subtotal: cartTotal.value
   }
-  if (!customerName.value.trim()) {
-    alert("Mohon isi Nama Lengkap pemesan.")
-    return
+
+  cart.value = []
+  if (import.meta.client) {
+    localStorage.removeItem('cart')
   }
-  alert(`Pesanan atas nama ${customerName.value} berhasil disiapkan!`)
+
+  isCartOpen.value = false
+  isInvoiceOpen.value = true
+}
+
+// 2. Tambahkan fungsi ini di bawah handleCheckout:
+const sendInvoiceToWhatsApp = (invoice) => {
+  let itemListText = ''
+  invoice.items.forEach((item, index) => {
+    itemListText += `${index + 1}. *${item.name}*\n`
+    itemListText += `   • Ukuran: EU ${item.size}\n`
+    itemListText += `   • Qty: ${item.qty}\n`
+    itemListText += `   • Subtotal: Rp ${(item.price * item.qty).toLocaleString('id-ID')}\n\n`
+  })
+
+  const ADMIN_WHATSAPP = '6281234567890'
+
+  const message = 
+`*PESANAN RESMI: ${invoice.orderId}*
+KAZKA & CO. FOOTWEAR
+
+*Detail Pembeli:*
+• Nama: ${invoice.name}
+• No. WhatsApp: ${invoice.phone}
+${invoice.email ? `• Email: ${invoice.email}\n` : ''}
+*Daftar Artikel:*
+${itemListText.trim()}
+
+*Pengiriman:*
+• Kurir: ${invoice.courier}
+• Ongkir: Rp ${invoice.shippingCost.toLocaleString('id-ID')}
+
+*TOTAL PEMBAYARAN:* *Rp ${invoice.totalPayment.toLocaleString('id-ID')}*
+
+Halo Admin, saya sudah menerima invoice di web dan ingin konfirmasi pembayaran.`
+
+  const encodedMessage = encodeURIComponent(message)
+  window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodedMessage}`, '_blank')
+
+  // Bersihkan keranjang dan tutup modal
+  cart.value = []
+  isInvoiceOpen.value = false
+  triggerToast('Pesanan diteruskan ke WhatsApp Admin!')
 }
 </script>
 
 <template>
-  <div>
-    <!-- Navbar -->
-    <Navbar :cart-count="cartCount" @open-cart="isCartOpen = true" />
+  <div class="store-layout">
+    <!-- Navbar Component -->
+    <Navbar 
+      :cart-count="cartCount"
+      @open-size-chart="isSizeChartOpen = true"
+      @open-cart="isCartOpen = true"
+    />
 
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1>Sepatu Lokal Kualitas Esensial</h1>
-      <p>Dibuat dengan kanvas pilihan dan sol vulkanisir untuk kenyamanan harian.</p>
-    </section>
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="catalog-header">
+        <h1 class="catalog-title">Katalog Artikel</h1>
+        <p class="catalog-subtitle">Pilihan siluet esensial KAZKA & CO. untuk aktivitas harian.</p>
+      </header>
 
-    <!-- Katalog Produk -->
-    <main class="catalog-container">
-      <div class="catalog-header">
-        <h2>Koleksi Artikel</h2>
-        <button type="button" class="size-chart-trigger" @click="isSizeChartOpen = true">
-          📏 Panduan Ukuran (Size Chart)
-        </button>
-      </div>
+      <!-- Toolbar Filter & Search -->
+      <section class="catalog-toolbar">
+        <div class="search-box">
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Cari artikel sepatu..." 
+            class="search-input"
+          />
+        </div>
 
-      <div class="products-grid">
+        <!-- Dropdown Urutkan / Sorting -->
+        <div class="filter-controls">
+          <select v-model="sortBy" class="sort-select">
+            <option value="default">Urutkan: Rekomendasi</option>
+            <option value="price-asc">Harga: Termurah</option>
+            <option value="price-desc">Harga: Tertinggi</option>
+            <option value="name-asc">Nama: A - Z</option>
+          </select>
+        </div>
+
+        <div class="category-tabs">
+          <button 
+            :class="{ active: selectedCategory === 'all' }" 
+            @click="selectedCategory = 'all'"
+          >Semua</button>
+          <button 
+            :class="{ active: selectedCategory === 'low' }" 
+            @click="selectedCategory = 'low'"
+          >Low Top</button>
+          <button 
+            :class="{ active: selectedCategory === 'high' }" 
+            @click="selectedCategory = 'high'"
+          >High Top</button>
+          <button 
+            :class="{ active: selectedCategory === 'court' }" 
+            @click="selectedCategory = 'court'"
+          >Court</button>
+        </div>
+      </section>
+
+      <!-- Grid Produk Terfilter -->
+      <section class="products-grid">
         <ProductCard
-          v-for="product in products"
-          :key="product.id"
-          :product="product"
+          v-for="item in filteredProducts"
+          :key="item.id"
+          :product="item"
           @add-to-cart="addToCart"
         />
-      </div>
+      </section>
+
+      <p v-if="filteredProducts.length === 0" class="no-products">
+        Artikel sepatu tidak ditemukan.
+      </p>
     </main>
 
-    <!-- Modal Pop-up Size Chart -->
-    <SizeChartModal
-      :is-open="isSizeChartOpen"
-      @close="isSizeChartOpen = false"
+    <!-- Modal Panduan Ukuran -->
+    <SizeChartModal 
+      :is-open="isSizeChartOpen" 
+      @close="isSizeChartOpen = false" 
     />
 
     <!-- Drawer Keranjang Belanja -->
@@ -175,440 +395,158 @@ function handleCheckout() {
       :is-open="isCartOpen"
       :cart="cart"
       :cart-total="cartTotal"
-      v-model:customer-name="customerName"
-      v-model:customer-email="customerEmail"
-      v-model:customer-phone="customerPhone"
       @close="isCartOpen = false"
       @change-qty="changeQty"
       @checkout="handleCheckout"
     />
 
-    <!-- Overlay Background -->
-    <div 
-      class="overlay" 
-      :class="{ open: isCartOpen || isSizeChartOpen }" 
-      @click="isCartOpen = false; isSizeChartOpen = false"
-    ></div>
+    <!-- Modal Invoice Bukti Pemesanan -->
+    <InvoiceModal
+      :is-open="isInvoiceOpen"
+      :invoice-data="currentInvoice"
+      @close="isInvoiceOpen = false"
+      @confirm-whatsapp="sendInvoiceToWhatsApp"
+    />
+
+    <!-- Toast Notification Melayang -->
+    <div class="toast" :class="{ show: showToast }">
+      ✓ {{ toastMessage }}
+    </div>
   </div>
 </template>
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+<style scoped>
+.store-layout {
+  min-height: 100vh;
+  background-color: #fafafa;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-body {
-    background-color: #fcfcfc;
-    color: #1a1a1a;
-    min-height: 100vh;
-}
-
-/* Navbar */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 32px;
-    background: #ffffff;
-    border-bottom: 1px solid #eaeaea;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-.brand-logo {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-}
-
-.cart-btn {
-    background: #111;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* Hero Section */
-.hero {
-    text-align: center;
-    padding: 48px 20px 32px;
-    background-color: #f7f7f8;
-    border-bottom: 1px solid #ececec;
-}
-
-.hero h1 {
-    font-size: 28px;
-    margin-bottom: 8px;
-}
-
-.hero p {
-    color: #666;
-    font-size: 15px;
-}
-
-/* Katalog */
-.catalog-container {
-    max-width: 1080px;
-    margin: 32px auto;
-    padding: 0 20px;
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
 }
 
 .catalog-header {
-    display: flex;
+  margin-bottom: 28px;
+}
+
+.catalog-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.catalog-subtitle {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Toolbar: Search & Tabs */
+.catalog-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 640px) {
+  .catalog-toolbar {
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+  }
 }
 
-.catalog-header h2 {
-    font-size: 20px;
+.search-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
-.size-chart-trigger {
-    background: none;
-    border: 1px dashed #666;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
+.search-input:focus {
+  border-color: #0f172a;
 }
 
-.size-chart-trigger:hover {
-    background: #f0f0f0;
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
-/* Grid & Card Produk */
+.category-tabs button {
+  padding: 8px 18px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.category-tabs button.active {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+/* Grid Katalog */
 .products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 
-.product-card {
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+.no-products {
+  text-align: center;
+  color: #64748b;
+  margin: 60px 0;
+  font-size: 15px;
 }
 
-.product-img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    background-color: #eee;
+/* Toast Floating */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: #0f172a;
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999;
 }
 
-.product-info {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
 }
 
-.product-title {
-    font-size: 15px;
-    margin-bottom: 6px;
-}
-
-.product-price {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: #222;
-}
-
-.size-select-label {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 4px;
-}
-
-.size-dropdown {
-    padding: 6px 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-bottom: 14px;
-    font-size: 13px;
-}
-
-.add-cart-btn {
-    margin-top: auto;
-    background: #111;
-    color: #fff;
-    border: none;
-    padding: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-.add-cart-btn:hover {
-    background: #333;
-}
-
-/* Modal Pop-up */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 40;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal.open {
-    display: flex;
-}
-
-.modal-dialog {
-    background: #ffffff;
-    width: 100%;
-    max-width: 480px;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    animation: modalFadeIn 0.2s ease-out;
-}
-
-@keyframes modalFadeIn {
-    from {
-        transform: translateY(-15px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.modal-header h3 {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.modal-desc {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 16px;
-    line-height: 1.5;
-}
-
-.size-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    margin-bottom: 16px;
-}
-
-.size-table th,
-.size-table td {
-    border: 1px solid #eee;
-    padding: 8px 12px;
-    text-align: center;
-}
-
-.size-table th {
-    background-color: #f7f7f8;
-    font-weight: 600;
-    color: #333;
-}
-
-.size-tip {
-    background-color: #fdf8e2;
-    border-left: 3px solid #e0b028;
-    padding: 10px 12px;
-    font-size: 12px;
-    color: #554300;
-    border-radius: 4px;
-}
-
-/* Drawer Keranjang */
-.cart-drawer {
-    position: fixed;
-    top: 0;
-    right: -420px;
-    width: 100%;
-    max-width: 400px;
-    height: 100vh;
-    background: #ffffff;
-    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-    z-index: 30;
-    display: flex;
-    flex-direction: column;
-    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cart-drawer.open {
-    right: 0;
-}
-
-.cart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.cart-items {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-.empty-msg {
-    text-align: center;
-    color: #888;
-    margin-top: 40px;
-    font-size: 14px;
-}
-
-.cart-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.cart-item-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 13px;
-}
-
-.cart-item-meta {
-    color: #666;
-    font-size: 12px;
-}
-
-.cart-qty-ctrl {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.cart-qty-ctrl button {
-    width: 24px;
-    height: 24px;
-    border: 1px solid #ccc;
-    background: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-/* Footer & Form Checkout */
-.cart-footer {
-    padding: 20px;
-    border-top: 1px solid #eee;
-    background: #fafafa;
-}
-
-.customer-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px dashed #e0e0e0;
-}
-
-.form-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #444;
-}
-
-.form-input {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 13px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-}
-
-.form-input:focus {
-    border-color: #111;
-}
-
-.form-input.error {
-    border-color: #dc2626;
-    background-color: #fef2f2;
-}
-
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 16px;
-    margin-bottom: 14px;
-}
-
-.checkout-btn {
-    width: 100%;
-    background: #16a34a;
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.checkout-btn:hover {
-    background: #15803d;
-}
-
-/* Overlay */
-.overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: 20;
-}
-
-.overlay.open {
-    display: block;
-}
+.sort-select {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 13px;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+} 
 </style>
