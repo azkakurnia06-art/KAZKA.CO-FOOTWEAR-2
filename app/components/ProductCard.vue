@@ -96,12 +96,33 @@ const handleAddToCart = () => {
   box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
 }
 
+/* Container pembungkus foto sepatu */
+/* Container Foto Produk */
 .thumbnail-wrapper {
-  position: relative;
   width: 100%;
-  height: 240px;
-  background-color: #f8fafc;
+  /* Gunakan rasio aspek 1:1 (kotak) atau 4:5 yang umum di brand sepatu */
+  aspect-ratio: 1 / 1; 
+  height: auto;               /* Hapus height: 240px yang statis */
+  background-color: #f1f5f9;
+  position: relative;
   overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  display: block;
+}
+
+/* Gambar Sepatu */
+.thumbnail-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;          /* Foto kembali penuh menutupi kotak */
+  object-position: center center; /* Fokus di tengah bodi sepatu */
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+/* Efek zoom saat kursor mengarah ke card */
+.product-card:hover .thumbnail-wrapper img {
+  transform: scale(1.05);
 }
 
 .product-badge {

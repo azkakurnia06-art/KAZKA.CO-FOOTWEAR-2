@@ -19,15 +19,10 @@ const formatRupiah = (val) => {
 
 const sendWhatsAppConfirmation = () => {
   if (!props.invoiceData) return
-
-  // Ganti dengan nomor WhatsApp tokomu (awali dengan kode negara 62)
-  const adminPhone = '6281234567890'
+  const adminPhone = '6281234567890' // Ganti nomor admin Anda
 
   const itemsList = props.invoiceData.items
-    .map(
-      (item, index) =>
-        `${index + 1}. ${item.name} (Size ${item.size}) x${item.qty} = ${formatRupiah(item.price * item.qty)}`
-    )
+    .map((item, index) => `${index + 1}. ${item.name} (Size ${item.size}) x${item.qty} = ${formatRupiah(item.price * item.qty)}`)
     .join('\n')
 
   const message = `*KONFIRMASI PESANAN - KAZKA & CO.*
@@ -39,24 +34,19 @@ ${itemsList}
 
 *Detail Pengiriman:*
 - Nama: ${props.invoiceData.name}
-- Telepon/WA: ${props.invoiceData.phone}
+- Telepon: ${props.invoiceData.phone}
 - Alamat: ${props.invoiceData.address}
-- Ekspedisi: ${props.invoiceData.courier}
+- Kurir: ${props.invoiceData.courier}
 
-*Detail Pembayaran:*
-- Subtotal: ${formatRupiah(props.invoiceData.subtotal)}
-- Ongkos Kirim: ${formatRupiah(props.invoiceData.shippingCost)}
-- Diskon: -${formatRupiah(props.invoiceData.discount || 0)}
-- *TOTAL BAYAR: ${formatRupiah(props.invoiceData.totalPayment)}*
-- Metode: ${props.invoiceData.paymentMethod}
+*Total Bayar: ${formatRupiah(props.invoiceData.totalPayment)}*
+Metode: ${props.invoiceData.paymentMethod}
 
-Halo Admin KAZKA & CO., saya sudah menyelesaikan pesanan di website dan ingin konfirmasi pembayaran.`
+Halo Admin KAZKA & CO., saya ingin konfirmasi pesanan ini.`
 
   const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`
   window.open(waUrl, '_blank')
 }
 
-// Fungsi Cetak / Simpan ke PDF
 const printInvoice = () => {
   window.print()
 }
@@ -65,67 +55,128 @@ const printInvoice = () => {
 <template>
   <div v-if="isOpen && invoiceData" class="modal-overlay" @click.self="emit('close')">
     <div class="modal-box">
-      <div class="modal-header">
-        <div>
-          <span class="badge-status">Pesanan Berhasil Dibuat</span>
-          <h3 class="modal-title">Invoice #{{ invoiceData.invoiceId }}</h3>
-          <p class="invoice-date">{{ invoiceData.date }}</p>
-        </div>
-        <button type="button" class="btn-close" @click="emit('close')">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="invoice-summary">
-          <p><strong>Penerima:</strong> {{ invoiceData.name }} ({{ invoiceData.phone }})</p>
-          <p><strong>Alamat:</strong> {{ invoiceData.address }}</p>
-          <p><strong>Pengiriman:</strong> {{ invoiceData.courier }}</p>
-          <p><strong>Metode Pembayaran:</strong> {{ invoiceData.paymentMethod }}</p>
-        </div>
-
-        <div class="items-list">
-          <div
-            v-for="item in invoiceData.items"
-            :key="`${item.id}-${item.size}`"
-            class="item-row"
-          >
-            <div>
-              <p class="name">{{ item.name }}</p>
-              <p class="meta">EU {{ item.size }} × {{ item.qty }}</p>
-            </div>
-            <span class="price">{{ formatRupiah(item.price * item.qty) }}</span>
-          </div>
-        </div>
-
-        <div class="price-breakdown">
-          <div class="row">
-            <span>Subtotal</span>
-            <span>{{ formatRupiah(invoiceData.subtotal) }}</span>
-          </div>
-          <div class="row">
-            <span>Ongkos Kirim</span>
-            <span>{{ formatRupiah(invoiceData.shippingCost) }}</span>
-          </div>
-          <div v-if="invoiceData.discount > 0" class="row discount">
-            <span>Diskon Voucher</span>
-            <span>-{{ formatRupiah(invoiceData.discount) }}</span>
-          </div>
-          <div class="row total">
-            <span>Total Bayar</span>
-            <span>{{ formatRupiah(invoiceData.totalPayment) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-whatsapp" @click="sendWhatsAppConfirmation">
-          Konfirmasi via WhatsApp
+      <!-- Aksi di Layar Komputer -->
+      <div class="action-bar no-print">
+        <button type="button" class="btn-action btn-wa" @click="sendWhatsAppConfirmation">
+          Konfirmasi WhatsApp
         </button>
-        <button type="button" class="btn-print" @click="printInvoice">
+        <button type="button" class="btn-action btn-print" @click="printInvoice">
           Cetak / Unduh PDF
         </button>
-        <button type="button" class="btn-done" @click="emit('close')">
-          Tutup
-        </button>
+        <button type="button" class="btn-action btn-close" @click="emit('close')">✕</button>
+      </div>
+
+      <!-- Kertas Invoice Resmi -->
+      <div class="invoice-paper">
+        <!-- Header -->
+        <div class="inv-header">
+          <div class="brand-info">
+            <h1 class="brand-title">KAZKA & CO.</h1>
+            <p class="brand-sub">Premium Footwear & Apparel</p>
+            <p class="brand-sub">Official Online Store</p>
+          </div>
+          <div class="inv-title-area">
+            <h2 class="inv-title">INVOICE</h2>
+            <p class="inv-number">#INV/{{ invoiceData.invoiceId }}</p>
+            <span class="badge-paid">PESANAN TERKONFIRMASI</span>
+          </div>
+        </div>
+
+        <hr class="divider-line" />
+
+        <!-- Info Pembeli & Detail Pengiriman -->
+        <div class="info-grid">
+          <div class="info-card">
+            <h4 class="card-heading">INFORMASI PEMBELI</h4>
+            <div class="info-row">
+              <span class="label">Nama:</span>
+              <span class="val font-bold">{{ invoiceData.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Telepon:</span>
+              <span class="val">{{ invoiceData.phone }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Alamat:</span>
+              <span class="val">{{ invoiceData.address }}</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h4 class="card-heading">DETAIL PENGIRIMAN & PEMBAYARAN</h4>
+            <div class="info-row">
+              <span class="label">Tanggal:</span>
+              <span class="val font-bold">{{ invoiceData.date }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Ekspedisi:</span>
+              <span class="val">{{ invoiceData.courier }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Pembayaran:</span>
+              <span class="val">{{ invoiceData.paymentMethod }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel Produk ala iBox -->
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th style="width: 5%">NO</th>
+              <th style="width: 20%">SKU</th>
+              <th style="width: 45%">DESKRIPSI PRODUK</th>
+              <th style="width: 10%; text-align: center;">QTY</th>
+              <th style="width: 20%; text-align: right;">HARGA (RP)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, idx) in invoiceData.items" :key="`${item.id}-${item.size}`">
+              <td>{{ idx + 1 }}</td>
+              <td class="sku-text">KZK-00{{ item.id }}</td>
+              <td>
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-desc">Ukuran: EU {{ item.size }}</div>
+              </td>
+              <td style="text-align: center;">{{ item.qty }} Pcs</td>
+              <td style="text-align: right;" class="font-bold">
+                {{ formatRupiah(item.price * item.qty) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Ringkasan Total -->
+        <div class="summary-section">
+          <div class="summary-table">
+            <div class="sum-row">
+              <span>Subtotal:</span>
+              <span>{{ formatRupiah(invoiceData.subtotal) }}</span>
+            </div>
+            <div class="sum-row">
+              <span>Ongkos Kirim:</span>
+              <span>{{ formatRupiah(invoiceData.shippingCost) }}</span>
+            </div>
+            <div v-if="invoiceData.discount > 0" class="sum-row discount">
+              <span>Diskon:</span>
+              <span>-{{ formatRupiah(invoiceData.discount) }}</span>
+            </div>
+            <div class="sum-row grand-total">
+              <span>Total Pembayaran:</span>
+              <span>{{ formatRupiah(invoiceData.totalPayment) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Catatan Syarat & Ketentuan -->
+        <div class="terms-section">
+          <p class="terms-title">Catatan & Ketentuan Pembelian:</p>
+          <ul>
+            <li>Simpan bukti invoice ini sebagai bukti resmi transaksi di KAZKA & CO.</li>
+            <li>Penukaran ukuran (size exchange) berlaku maksimal 2x24 jam sejak barang diterima dengan kondisi baru dan tag utuh.</li>
+            <li>Nomor resi pengiriman akan diperbarui otomatis melalui konfirmasi WhatsApp Admin.</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -135,214 +186,261 @@ const printInvoice = () => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
-  z-index: 1100;
+  z-index: 1200;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  overflow-y: auto;
 }
 
 .modal-box {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
   width: 100%;
-  max-width: 480px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  max-width: 680px;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
   overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-.modal-header {
-  padding: 18px 20px;
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.btn-action {
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-wa { background: #16a34a; color: white; }
+.btn-print { background: #0f172a; color: white; }
+.btn-close { background: #e2e8f0; color: #475569; font-size: 14px; }
+
+.invoice-paper {
+  padding: 28px 32px;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a;
+}
+
+.inv-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
-.badge-status {
-  display: inline-block;
-  background: #dcfce7;
-  color: #166534;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-
-.modal-title {
+.brand-title {
   margin: 0;
-  font-size: 17px;
-  font-weight: 800;
-  color: #0f172a;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
 }
 
-.invoice-date {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: #64748b;
-}
-
-.modal-body {
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.invoice-summary {
-  background: #f8fafc;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #334155;
-  margin-bottom: 16px;
-  line-height: 1.6;
-}
-
-.invoice-summary p {
-  margin: 0;
-}
-
-.items-list {
-  border-top: 1px solid #f1f5f9;
-  border-bottom: 1px solid #f1f5f9;
-  padding: 10px 0;
-  margin-bottom: 14px;
-}
-
-.item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-}
-
-.item-row .name {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.item-row .meta {
+.brand-sub {
   margin: 2px 0 0;
   font-size: 11px;
   color: #64748b;
 }
 
-.item-row .price {
-  font-size: 13px;
-  font-weight: 700;
-  color: #0f172a;
+.inv-title-area {
+  text-align: right;
 }
 
-.price-breakdown .row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 6px;
+.inv-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
 }
 
-.price-breakdown .discount {
-  color: #dc2626;
+.inv-number {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
 }
 
-.price-breakdown .total {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid #e2e8f0;
-  font-size: 16px;
+.badge-paid {
+  display: inline-block;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 10px;
   font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.divider-line {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 18px 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.card-heading {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #334155;
+  border-bottom: 1px dashed #cbd5e1;
+  padding-bottom: 4px;
+}
+
+.info-row {
+  display: flex;
+  font-size: 11px;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.info-row .label {
+  width: 75px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.info-row .val {
   color: #0f172a;
 }
 
-.modal-footer {
-  padding: 16px 20px;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.font-bold { font-weight: 700; }
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 11px;
 }
 
-.btn-whatsapp {
-  width: 100%;
-  padding: 12px;
-  background: #16a34a;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.btn-print {
-  width: 100%;
-  padding: 10px;
+.inv-table th {
   background: #0f172a;
   color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
+  padding: 8px 10px;
+  font-weight: 700;
+  text-align: left;
+  letter-spacing: 0.3px;
 }
 
-.btn-done {
-  width: 100%;
+.inv-table td {
   padding: 10px;
-  background: transparent;
-  color: #64748b;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-/* Styling saat mode cetak / download PDF */
-@media print {
-  body * {
-    visibility: hidden;
-  }
+.sku-text {
+  color: #64748b;
+  font-family: monospace;
+}
 
+.item-name {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.item-desc {
+  color: #64748b;
+  font-size: 10px;
+}
+
+.summary-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.summary-table {
+  width: 260px;
+}
+
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 4px;
+  color: #475569;
+}
+
+.sum-row.discount { color: #dc2626; }
+
+.sum-row.grand-total {
+  border-top: 2px solid #0f172a;
+  padding-top: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.terms-section {
+  border-left: 3px solid #0f172a;
+  padding-left: 12px;
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.terms-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.terms-section ul {
+  margin: 0;
+  padding-left: 14px;
+}
+
+/* Format Khusus Cetak / PDF */
+@media print {
+  .no-print { display: none !important; }
+  body * { visibility: hidden; }
+  .invoice-paper, .invoice-paper * { visibility: visible; }
   .modal-overlay {
     position: static;
-    background: none;
     padding: 0;
+    background: none;
   }
-
-  .modal-box,
-  .modal-box * {
-    visibility: visible;
-  }
-
   .modal-box {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     max-width: 100%;
-    border: none;
     box-shadow: none;
+    border: none;
   }
+}
 
-  .modal-footer,
-  .btn-close {
-    display: none !important;
-  }
+@media (max-width: 600px) {
+  .info-grid { grid-template-columns: 1fr; }
+  .invoice-paper { padding: 18px; }
 }
 </style>
